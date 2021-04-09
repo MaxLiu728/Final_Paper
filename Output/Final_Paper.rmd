@@ -1,5 +1,5 @@
 ---
-title: "Impact of China's ban on Australian coal policy on Chinese thermal coal prices"
+title: "Impact of China's ban on Australian coal policy on China's thermal coal prices"
 author: "Renjing Liu"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 abstract: ""
@@ -10,7 +10,7 @@ output:
 bibliography: references.bib
 ---
 ######### Notes for RDD ###############
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo=FALSE}
 library(readxl)
 library(tinytex)
 library(tidyverse)
@@ -18,9 +18,37 @@ library(tibble)
 library(ggplot2)
 library(bookdown)
 library(DiagrammeR)
+library(dplyr)
 Df<- read_excel(here::here("Input/Raw_Data.xlsx"))
 ```
 # Introduction
+## Overview of the coal market in China
+Coal is remarkably significant and special for China, in which the energy resource structure is “rich coal, less gas, lack of oil”[@Coal3]. In 2019, coal consumption accounted for 57.7% of the country’s total energy usage [@Coal2]. As a result, coal has a dominant position in China’s energy supply and consumption, performing incredible impacts on many aspects of China’s economy, especially for the manufacturing industry. And the position is not likely to present a dramatic change in the coming decades [@Coal3]. 
+
+Within many classifications of coal, thermal coal (namely steam coal) is generally one type that uses calorific value by burning. It is widely used to generate electricity, heat, and steel making in China [@Coal5]. Currently, thermal coal is the primary type of coal in China’s market, with the price index of it being classified as its calorific value (Normally 5500kcal/kg or 5000kcal/kg) by different trading centres or ports [@Coal2]. Given the importance of thermal coal in China’s energy market, the fluctuations in thermal coal’s spot price may pose threats to the economic growth, energy security, and industrial raw material supply [@Coal2]. Therefore, it is meaningful and important for the government or the market to clarify the factors behind the fluctuating price, sustaining stable economic development. 
+
+Though China is sufficient in coal resources, it still plays the role of coal buyer in the global coal market. One of the reasons is the southeast region of China, contributing to the large electricity consumption of the country, is the closest region to two major global coal exporting nations, Indonesia and Australia. Importing international coal is more economical for coal buyers in that region, compared with buying domestic coal [@Coal4]. According to [@Coal6], China imported 304 million tonnes of coal in 2020, up 4 million tonnes from a year earlier.
+
+## China's ban on Australian coal
+In my previous work, serving for China’s national coal trading centre, at the Beijing Institute of Big Data Research. My team noticed an unnormal fluctuation in the price index (CCI5500 kcal/kg) of thermal coal, as shown in \@ref(fig:fig20), with the figure rising from 600 yuan/ton at the end of October 2020 to nearly 900 yuan/ton in January 2021. Officers in the trading centre assumed synchronous China’s ban on Australian coal policy might be the major indicator to cause this uncommon volatility. 
+
+```{r fig1, fig.cap= "Trends in several coal price index", echo = FALSE, warning=FALSE,regfloat=TRUE}
+Df$Time<- as.Date(Df$Time)
+
+p<- ggplot(data= Df)
+p+ geom_line(aes(x= Df$Time, y= Df$Spot_CCI), color= "red")+ 
+  scale_x_date(date_labels = "%m-%Y")+ 
+  geom_line(aes(x= Df$Time, y= Df$Spot_CCTD),color= "blue")
+
+```
+
+According to several reports, the details of this event can be present as follows: On 13 October 2020, Chinese state-owned power plants and steel mills received verbal notice from authorities to stop buying Australian thermal and coking coal [@Event5]. 13.73 million tons of coal was imported by China in October 2020, down 46.56 percent from a year ago and down 26.5 percent month-on-month [@Event6]. On 25 November 2020, over 50 vessels anchored off Chinese ports waiting to offload coal from Australia [@Event8]. On 12 January 2021, Chinese traders were importing more coal from neighboring countries such as Russia and Mongolia [@Event4]. 
+
+On the basis of all the points above, I personally want to identify whether there is a relationship between China’s ban on the Australian coal event and the fluctuations of thermal coal price and hence the magnitude of the impacts. Specifically, this study proposes the following hypotheses.
+	Hypothesis 1: China’s ban on Australian coal mainly lead to the upward trend in coal prices since 12 October 2020. This impact might be rapid, but the lasting period is very short. 
+	Hypothesis 2: China’s ban on Australian coal mainly lead to the upward trend in coal prices since 12 October 2020. This impact might have a certain lag, and the lasting period is very short.
+
+The remainder of this paper is organized as follows. Section 2 presents the data description. Section 3 introduces the experimental design. Section 4 reports the empirical results. Section 5 will discuss the impacts and propose rational recommendations for the stable development of China’s future coal prices. 
 
 
 # Data
@@ -32,9 +60,7 @@ Df<- read_excel(here::here("Input/Raw_Data.xlsx"))
 # Discussion
 
 
-```{r,echo = FALSE}
 
-```
 
 
 
