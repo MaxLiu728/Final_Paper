@@ -8,6 +8,7 @@ output:
     latex_engine: xelatex
     toc: FALSE
 bibliography: references.bib
+thanks: 'Code and Data are available at: https://github.com/MaxLiu728/Final_Paper.git'
 ---
 ######### Notes for RDD ###############
 ```{r setup, include=FALSE, echo=FALSE}
