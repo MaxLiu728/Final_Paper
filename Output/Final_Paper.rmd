@@ -1,17 +1,44 @@
 ---
-title: "INF2178_Final_Paper"
+title: "Impact of China's ban on Australian coal policy on Chinese thermal coal prices"
 author: "Renjing Liu"
-date: "2021/4/6"
-output: html_document
+date: "`r format(Sys.time(), '%d %B %Y')`"
+abstract: ""
+output: 
+  bookdown::pdf_document2:
+    latex_engine: xelatex
+    toc: FALSE
+bibliography: references.bib
 ---
 ######### Notes for RDD ###############
-```{r}
+```{r setup, include=FALSE}
 library(readxl)
+library(tinytex)
+library(tidyverse)
+library(tibble)
+library(ggplot2)
+library(bookdown)
 library(DiagrammeR)
 Df<- read_excel(here::here("Input/Raw_Data.xlsx"))
 ```
+# Introduction
 
-```{r}
+
+# Data
+
+# Experimental Design
+
+# Results
+
+# Discussion
+
+
+```{r,echo = FALSE}
+
+```
+
+
+
+```{r,echo = FALSE}
 
 ```
 
