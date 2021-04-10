@@ -64,7 +64,12 @@ The remainder of this paper is organized as follows. Section 2 presents the data
 
 # Data
 
-# Experimental Design
+# Experimental Design (Draft)
+## Plan 1
+According to [@Coal2], I will use Difference-in-Difference model in this study. The oil price will be set as my control group, as the trend of its price fluctuation is nearly the same as that of coal. And most of the current thermal coal consumption in China is used for coal-fired boilers. So no complementary relationship is observed between thermal coal and oil. The most important thing is to check there is a parallel trend between crude oil price and coal price. 
+
+## Plan 2
+Use regression discontinuity in Time (RDiT) framework, as my data set is the time-series. Therefore, I will set time as the running variable. There will be impossible for a difference-in-difference framework, as no available cross-sectional variation in policy implementation. I only compare the price before and after the cut point of policy implementation. However, there might be many potential time-varying confounders I have to control in the set of covariates, such as temperature, power usage. Moreover, I need to consider the time-series nature: Autoregressive, as the recent price can be affected by the its historical price. Finally, the density test needs to be checked. 
 
 # Results
 
