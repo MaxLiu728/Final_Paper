@@ -81,8 +81,31 @@ Use regression discontinuity in Time (RDiT) framework, as my data set is the tim
 
 
 
-```{r,echo = FALSE}
+```{r}
+library(foreign)
+mydata = read.dta("http://dss.princeton.edu/training/Panel101.dta")
 
+mydata$time = ifelse(mydata$year >= 1994, 1, 0)
+mydata$treated = ifelse(mydata$country == "E" |
+mydata$country == "F" |
+mydata$country == "G", 1, 0)
+
+mydata$did = mydata$time * mydata$treated
+```
+
+```{r}
+library(readxl)
+Df2<- read_excel(here::here("Input/Raw_Data_2.xlsx"))
+```
+
+```{r}
+Df2$Treat<- as.factor(Df2$Treat)
+Df2$Energy<- as.factor(Df2$Energy)
+model_1= lm(Price~ Energy*Treat, data= Df2)
+```
+
+```{r}
+summary(model_1)
 ```
 
 
