@@ -20,8 +20,11 @@ library(ggplot2)
 library(bookdown)
 library(DiagrammeR)
 library(dplyr)
+
+##for plot xticks#
+library(scales)
 #Add data
-Df<- read_excel(here::here("Input/Raw_Data.xlsx"))
+Intro_data<- read_excel(here::here("Input/Raw_Data.xlsx"))
 ```
 \newpage
 # Introduction
@@ -36,18 +39,23 @@ Though China is sufficient in coal resources, it still plays the role of coal bu
 In my previous work, serving for China’s national coal trading centre, at the Beijing Institute of Big Data Research. My team noticed an unnormal fluctuation in the price index (CCI5500 kcal/kg) of thermal coal, as denoted before and after the red line in \@ref(fig:fig1), with the figure rising from 600 yuan/ton at the end of October 2020 to nearly 900 yuan/ton in January 2021. Officers in the trading centre assumed synchronous China’s ban on Australian coal policy might be the major indicator to cause this uncommon volatility. 
 
 ```{r fig1, fig.cap= "Trends in several coal price index", echo = FALSE, warning=FALSE,regfloat=TRUE}
-Df$Time<- as.Date(Df$Time)
-
-Df_gather<- Df%>%
+Intro_data$Time<- as.Date(Intro_data$Time)
+names(Intro_data)[5]<- "Spot_CCI"
+names(Intro_data)[6]<- "Spot_CCTD"
+names(Intro_data)[7]<- "Spot_Caigou"
+names(Intro_data)[8]<- "Spot_Yimei"
+Intro_data<- Intro_data%>%
   select(Time, Spot_CCI, Spot_CCTD, Spot_Caigou, Spot_Yimei)
-Df_gather$Time<- as.Date(Df_gather$Time)
-Df_gather<- gather(Df_gather, key="Index",value="Spot Price", -Time)
+Intro_data$Time<- as.Date(Intro_data$Time)
+Intro_data<- na.omit(Intro_data)
+Intro_data_2<- gather(Intro_data, key="Index",value="Spot Price", -Time)
 
-ggplot(Df_gather, aes(x= Time, y= Df_gather$`Spot Price`, color= Index,group= Index))+
+ggplot(Intro_data_2, aes(x= Time, y= Intro_data_2$`Spot Price`, color= Index,group= Index))+
   geom_line()+
-  scale_x_date(date_labels = "%m-%Y")+
+  (scale_x_date(labels=date_format("%b %y"),
+                breaks= date_breaks("3 months")))+
   theme_minimal()+
-  geom_vline(xintercept = as.numeric(Df_gather$Time[132]), linetype= 4,color="red",size=1)+
+  geom_vline(xintercept = Intro_data_2$Time[132], linetype= 4,color="red",size=1)+
   labs(y="Coal Spot Price")
 
 ```
@@ -81,32 +89,86 @@ Use regression discontinuity in Time (RDiT) framework, as my data set is the tim
 
 
 
-```{r}
-library(foreign)
-mydata = read.dta("http://dss.princeton.edu/training/Panel101.dta")
 
-mydata$time = ifelse(mydata$year >= 1994, 1, 0)
-mydata$treated = ifelse(mydata$country == "E" |
-mydata$country == "F" |
-mydata$country == "G", 1, 0)
-
-mydata$did = mydata$time * mydata$treated
-```
 
 ```{r}
 library(readxl)
-Df2<- read_excel(here::here("Input/Raw_Data_2.xlsx"))
+Df2<- read_excel(here::here("Input/model_data.xlsx"))
+names(Df2)[2]<- 'Price'
 ```
 
 ```{r}
 Df2$Treat<- as.factor(Df2$Treat)
 Df2$Energy<- as.factor(Df2$Energy)
-model_1= lm(Price~ Energy*Treat, data= Df2)
+model_1= lm(log(Price)~ Energy+ Energy*Treat, data= Df2)
 ```
 
 ```{r}
 summary(model_1)
 ```
+
+```{r echo=FALSE}
+## Parallel trend test## 
+### Visualize ###
+#### Average coal price without the policy effect as the base price##### 
+Base_Group<- group_by(Df2, Energy)%>%
+  filter(Time< "2020-10-17")%>%
+  summarise(Base_price= mean(Price))
+  
+Percentage<- function(x){
+  for (i in 1:nrow(Df2)){
+    if (Df2$Energy[i]==0){
+      Df2$Contribution_percentage= (Df2$Price- Base_Group$Base_price[1])/Base_Group$Base_price[1]
+    }
+    else{
+      Df2$Contribution_percentage= (Df2$Price- Base_Group$Base_price[2])/Base_Group$Base_price[2]
+    }
+  }
+  return(Df2)
+}
+
+Df2<- Percentage(Df2)
+```
+
+```{r}
+## Visualize parallel trend ##
+Df2$Time<- as.Date(Df2$Time)
+ggplot(data = Df2,
+       aes(x= Time, y= Contribution_percentage, col= Energy))+
+  geom_line()+
+  geom_vline(xintercept = Df2$Time[132], linetype= 4,color="red",size=1)+
+  labs(y="Coal Spot Price")+
+  (scale_x_date(labels=date_format("%b %y"),
+                breaks= date_breaks("3 months")))
+```
+
+
+```{r,echo=FALSE}
+## Parallel trend test ##
+
+
+```
+
+
+
+```{r}
+## Import values ##
+Df_factors<- read_xlsx(here::here("Input/Variables.xlsx"))
+names(Df_factors)[1]<- "Time"
+names(Df_factors)[5]<- "Import"
+
+
+library(lubridate) # for working with dates
+library(ggplot2)  # for creating graphs
+library(scales)   # to access breaks/formatting functions
+library(gridExtra) # for arranging plots
+
+Df_factors_2<- Df_factors[63:96, ]
+ggplot(data= Df_factors_2, aes(x= Time, y= Import))+ 
+  geom_bar(stat = "identity", colour= "red")+
+  geom_vline(xintercept = Df_factors_2$Time[32], linetype= 4,color="blue",size=1)
+```
+
 
 
 
