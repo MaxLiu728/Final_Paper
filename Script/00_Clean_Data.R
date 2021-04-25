@@ -27,5 +27,3 @@ model_data$Energy<- rep(c(1,0),each=156)
 ### Treat variable ###
 model_data$Treat<- ifelse(model_data$Time>"2020-10-15",1,0)
 write_xlsx(model_data, here::here("Input/model_data.xlsx"))
-
-### Select the timeline of the effect ## 

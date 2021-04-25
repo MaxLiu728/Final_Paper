@@ -20,7 +20,8 @@ library(ggplot2)
 library(bookdown)
 library(DiagrammeR)
 library(dplyr)
-
+library(kableExtra)
+library(knitr)
 ##for plot xticks#
 library(scales)
 #Add data
@@ -36,42 +37,97 @@ Within many classifications of coal, thermal coal (namely steam coal) is general
 Though China is sufficient in coal resources, it still plays the role of coal buyer in the global coal market. One of the reasons is the southeast region of China, contributing to the large electricity consumption of the country, is the closest region to two major global coal exporting nations, Indonesia and Australia. Importing international coal is more economical for coal buyers in that region, compared with buying domestic coal [@Coal4]. According to [@Coal6], China imported 304 million tonnes of coal in 2020, up 4 million tonnes from a year earlier.
 
 ## China's ban on Australian coal
-In my previous work, serving for China’s national coal trading centre, at the Beijing Institute of Big Data Research. My team noticed an unnormal fluctuation in the price index (CCI5500 kcal/kg) of thermal coal, as denoted before and after the red line in \@ref(fig:fig1), with the figure rising from 600 yuan/ton at the end of October 2020 to nearly 900 yuan/ton in January 2021. Officers in the trading centre assumed synchronous China’s ban on Australian coal policy might be the major indicator to cause this uncommon volatility. 
+In my previous work, serving for China’s national coal trading centre, at the Beijing Institute of Big Data Research. My team noticed an unnormal fluctuation in the price index (CCI5500 kcal/kg) of thermal coal, with the figure rising from 600 yuan/ton at the end of October 2020 to nearly 900 yuan/ton in January 2021. Officers in the trading centre assumed synchronous China’s ban on Australian coal policy might be the major indicator to cause this uncommon volatility. 
 
-```{r fig1, fig.cap= "Trends in several coal price index", echo = FALSE, warning=FALSE,regfloat=TRUE}
-Intro_data$Time<- as.Date(Intro_data$Time)
+```{r echo=FALSE}
+Intro_data<- read_excel(here::here("Input/Raw_Data.xlsx"))
+Intro_data$Time <- format(as.Date(Intro_data$Time), "%Y-%m-%d")
 names(Intro_data)[5]<- "Spot_CCI"
 names(Intro_data)[6]<- "Spot_CCTD"
 names(Intro_data)[7]<- "Spot_Caigou"
 names(Intro_data)[8]<- "Spot_Yimei"
 Intro_data<- Intro_data%>%
   select(Time, Spot_CCI, Spot_CCTD, Spot_Caigou, Spot_Yimei)
-Intro_data$Time<- as.Date(Intro_data$Time)
 Intro_data<- na.omit(Intro_data)
 Intro_data_2<- gather(Intro_data, key="Index",value="Spot Price", -Time)
-
-ggplot(Intro_data_2, aes(x= Time, y= Intro_data_2$`Spot Price`, color= Index,group= Index))+
-  geom_line()+
-  (scale_x_date(labels=date_format("%b %y"),
-                breaks= date_breaks("3 months")))+
-  theme_minimal()+
-  geom_vline(xintercept = Intro_data_2$Time[132], linetype= 4,color="red",size=1)+
-  labs(y="Coal Spot Price")
-
+Intro_data_2$Time<- as.Date(Intro_data_2$Time)
 ```
 
-According to several reports, the details of this event can be present as follows: On 13 October 2020, Chinese state-owned power plants and steel mills received verbal notice from authorities to stop buying Australian thermal and coking coal [@Event5]. 13.73 million tons of coal was imported by China in October 2020, down 46.56 percent from a year ago and down 26.5 percent month-on-month [@Event6]. On 25 November 2020, over 50 vessels anchored off Chinese ports waiting to offload coal from Australia [@Event8]. On 12 January 2021, Chinese traders were importing more coal from neighboring countries such as Russia and Mongolia [@Event4]. 
+According to several reports, the details of this event can be present as follows: On 13 October 2020, Chinese state-owned power plants and steel mills received verbal notice from authorities to stop buying Australian thermal and coking coal [@Event5]. As shown in Figure \@ref(fig:fig1), 13.73 million tons of coal was imported by China in October 2020, down 46.56 percent from a year ago and down 26.5 percent month-on-month [@Event6]. On 25 November 2020, over 50 vessels anchored off Chinese ports waiting to offload coal from Australia [@Event8]. On 12 January 2021, Chinese traders were importing more coal from neighboring countries such as Russia and Mongolia [@Event4]. 
 
-On the basis of all the points above, I personally want to identify whether there is a relationship between China’s ban on the Australian coal event and the fluctuations of thermal coal price and hence the magnitude of the impacts. Specifically, this study proposes the following hypotheses.
-\newline
-	Hypothesis 1: China’s ban on Australian coal mainly lead to the upward trend in coal prices since 12 October 2020. This impact might be rapid, but the lasting period is very short. 
-\newline
-	Hypothesis 2: China’s ban on Australian coal mainly lead to the upward trend in coal prices since 12 October 2020. This impact might have a certain lag, and the lasting period is very short.
+```{r fig1, fig.cap= "Monthly movement of coal import values", echo = FALSE, warning=FALSE,regfloat=TRUE}
+Variable_data<- read_excel(here::here("Input/Variables.xlsx"))
+Import_info<- Variable_data[c(1,5)]
+names(Import_info)[1]<- "Time"
+names(Import_info)[2]<- "Import_Value"
+Import_info$Time <- format(as.Date(Import_info$Time), "%y-%m")
+Import_info<- as.data.frame(Import_info[81:96, ])
+Import_info<- as.data.frame(Import_info[-c(4,5,6), ])
+ggplot(data= Import_info)+
+  geom_col(aes(x= Time, y= Import_Value), size= 1, color= "darkblue", fill="white")+
+  geom_line(aes(x= Time, y= Import_Value), size= 1.5, color= "red", group=1)+
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(y= "Imports of coal (In million tons")
+```
+
+
+## Coal price disturbances
+According to [Coal7], in 2017, China’s National Development & Reform Commission said few top coal industry enterprises had agreed on the contract with coal price at 535 yuan ($79) per tonne, which was close to the profit and loss point of coal and electricity enterprises, instead of referring to fluctuating spot market price. The government wanted to promote similar regulations to stabilize coal transaction prices, to ensure both supply-side and demand-side can have a similar profit margin. Based on [Coal2], without a stabilized coal market price, other industries and socio-economic development might be destroyed. Specifically, the changes in coal price could perform negative impacts on overall price levels [@Coal4]. And the abnormality in China’s coal price may indicate the fluctuations in dynamics of the global fossil fuel market [@Coal8]. Moreover, as coal is mainly used for power generation, the disturbances in coal price may also have adverse effects on power sectors in China. As a result, any related policies made by the central government should necessarily concern the potential impacts on the coal price, avoiding the unusual volatility in coal market price. 
+
+On the basis of all the points above, I personally want to identify whether China’s ban on the Australian coal event indicates the fluctuations of thermal coal price and hence the magnitude of the impacts during winter 2020. The result may help the government to reflect on some unobserved or observed impacts of this incident, facilitating them to make policy decisions more reasonably in the future.
+
+Specifically, this study proposes the following hypotheses.
+	Hypothesis 1: China’s ban on Australian coal mainly led to the upward trend in coal prices since 12 October 2020. This impact might be rapid, but the lasting period is very short.
+	Hypothesis 2: China’s ban on Australian coal mainly led to the upward trend in coal prices since 12 October 2020. This impact might have a certain lag, and the lasting period is very short.
 
 The remainder of this paper is organized as follows. Section 2 presents the data description. Section 3 introduces the experimental design. Section 4 reports the empirical results. Section 5 will discuss the impacts and propose rational recommendations for the stable development of China’s future coal prices. 
 
+Thanks for my career mentor Yang Chen and Beijing Institute of Big Data Research (BIBDR), who provided me the access to some data and other coal industry guidance. 
+
+
 
 # Data
+The primary data for this study involve the four kinds of weekly data of coal spot market price (yuan/ton) in China’s market, setting the calorific value with 5500 kcal/kg, from March 31 2018 to April 3 2021. As talked before in Section 1, four coal price indexes are: CCTD Qinhuangdao thermal coal price index (CCTD), CCI Zonghe coal price index, Yimei coal price index (Yimei) respectively. As shown in Figure \@ref(fig:fig2), the red line denoted before and after the event.
+
+```{r fig2 fig.cap= "Price index movement of coal", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
+ggplot(Intro_data_2, aes(x= Time, y= Intro_data_2$`Spot Price`, color= Index,group= Index))+
+  geom_line()+
+  (scale_x_date(labels=date_format("%y-%m"),
+                breaks= date_breaks("3 months")))+
+  theme_minimal()+
+  geom_vline(xintercept = Intro_data_2$Time[132], linetype= 4,color="red",size=1)+
+  labs(y="Coal Spot Price (In RMB)")
+```
+
+And there are two reasons why I choose these four types of coal price index. Firstly,  the selected prices are the most mainstream coal price index in the current market. They can highly present the volatility in the coal market. Secondly, the four prices are relatively more complete than other options, with less missing values in the chosen time period. I collect these data from the Wind database [Data1]. 
+
+In terms of few missing values in one or two coal prices, caused by holidays and festivals, I apply a random forest regression method to make imputations. I also apply the simple average approach to calculate the average coal price of the four selected indexes every week as the input data to my model. Based on Section 1, the study divides the data set into two sub-groups to precisely identify the respective disposal effects. Group 1 corresponds to the Ban on Australian coal event with a time range of March 31, 2018 to October 10, 2020 before the event. Group 2 corresponds to the event with a time range of October 17, 2020 to April 3,  2021 after the implementation. Table 1 \@ref(tab:tab1) provides the descriptive statistics of the data sample. 
+
+```{r tab1, echo=FALSE}
+Data_data<- filter(Intro_data, Energy==1)%>%
+  select(Time, Price)
+
+Data_data_1<- as.data.frame(Data_data[1:132,])
+Data_data_2<- as.data.frame(Data_data[132:156,])
+obs_1<- nrow(Data_data_1)
+Mean_1<- mean(Data_data_1$Price)
+SD_1<- sd(Data_data_1$Price)
+Min_1<- min(Data_data_1$Price)
+Max_1<- max(Data_data_1$Price)
+
+obs_2<- nrow(Data_data_2$Price)
+Mean_2<- mean(Data_data_2$Price)
+SD_2<- sd(Data_data_2$Price)
+Min_2<- min(Data_data_2$Price)
+Max_2<- max(Data_data_2$Price)
+
+table_1<- rbind.data.frame(c("Group1",obs_1, Mean_1, SD_1, Min_1, Max_1))
+table_1<- rbind.data.frame(table_1, c("Group2",25, Mean_2, SD_2, Min_2, Max_2))
+names(table_1)<- c("Variable","obs","Mean","Std.Dev","Min","Max")
+
+kable(table_1, caption = "Descriptive statistics of coal price at different time periods")
+```
+
 
 # Experimental Design (Draft)
 ## Plan 1
@@ -115,17 +171,6 @@ Base_Group<- group_by(Df2, Energy)%>%
   filter(Time< "2020-10-17")%>%
   summarise(Base_price= mean(Price))
   
-Percentage<- function(x){
-  for (i in 1:nrow(Df2)){
-    if (Df2$Energy[i]==0){
-      Df2$Contribution_percentage= (Df2$Price- Base_Group$Base_price[1])/Base_Group$Base_price[1]
-    }
-    else{
-      Df2$Contribution_percentage= (Df2$Price- Base_Group$Base_price[2])/Base_Group$Base_price[2]
-    }
-  }
-  return(Df2)
-}
 
 Df2<- Percentage(Df2)
 ```
@@ -167,6 +212,8 @@ Df_factors_2<- Df_factors[63:96, ]
 ggplot(data= Df_factors_2, aes(x= Time, y= Import))+ 
   geom_bar(stat = "identity", colour= "red")+
   geom_vline(xintercept = Df_factors_2$Time[32], linetype= 4,color="blue",size=1)
+
+
 ```
 
 
