@@ -426,3 +426,11 @@ install.packages("rddensity")
 library(rddensity)
 model_desnity_test<- rddensity(Exp_data_RDit$Price, c= Exp_data_RDit$Price[132], p=2)
 summary(model_desnity_test)
+
+
+
+
+
+
+
+

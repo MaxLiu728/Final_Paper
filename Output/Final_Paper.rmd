@@ -87,7 +87,7 @@ Thanks for my career mentor Yang Chen and Beijing Institute of Big Data Research
 
 
 # Data
-The primary data for this study involve the four kinds of weekly data of coal spot market price (yuan/ton) in China’s market, setting the calorific value with 5500 kcal/kg, from March 31 2018 to April 3 2021. As talked before in Section 1, four coal price indexes are: CCTD Qinhuangdao thermal coal price index (CCTD), CCI Zonghe coal price index, Yimei coal price index (Yimei) respectively. As shown in Figure \@ref(fig:fig2), the red line denoted before and after the event.
+The primary data for this study involve the four kinds of weekly data of coal spot market price (yuan/ton) in China’s market, setting the calorific value with 5500 kcal/kg, from March 31 2018 to April 3 2021. As talked before in Section 1, four coal price indexes are: CCTD Qinhuangdao thermal coal price index (CCTD), CCI Zonghe coal price index (CCI), Yimei coal price index (Yimei) respectively. As shown in Figure \@ref(fig:fig2), the red line denoted before and after the event.
 
 ```{r fig2 fig.cap= "Price index movement of coal", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
 ggplot(Intro_data_2, aes(x= Time, y= Intro_data_2$`Spot Price`, color= Index,group= Index))+
@@ -128,13 +128,48 @@ names(table_1)<- c("Variable","obs","Mean","Std.Dev","Min","Max")
 kable(table_1, caption = "Descriptive statistics of coal price at different time periods")
 ```
 
+Specifically, as present in Table 1 \@ref(tab:tab1), in Group 1, there are 132 observations during the period between March 31, 2018 and October 10, 2020, with the average coal price was 594 yuan/ton. In Group 2, there are 25 observations after the implementation of the event, with the average coal price was approximately 682 yuan/ton. 
 
-# Experimental Design (Draft)
-## Plan 1
-According to [@Coal2], I will use Difference-in-Difference model in this study. The oil price will be set as my control group, as the trend of its price fluctuation is nearly the same as that of coal. And most of the current thermal coal consumption in China is used for coal-fired boilers. So no complementary relationship is observed between thermal coal and oil. The most important thing is to check there is a parallel trend between crude oil price and coal price. 
+## Control variables
+In addition, I also collect a vector of control variables, to avoid some potentially confounding effects. According to [@Exp2], compared to the traditional RD approach, the RDiT framework is more necessary to add some control variables. As some unobserved variables related with the running variable time, such as weather or cost, might have discontinuous impacts on the coal price. As a result, covariates will be included in this study to prevent bias. 
 
-## Plan 2
-Use regression discontinuity in Time (RDiT) framework, as my data set is the time-series. Therefore, I will set time as the running variable. There will be impossible for a difference-in-difference framework, as no available cross-sectional variation in policy implementation. I only compare the price before and after the cut point of policy implementation. However, there might be many potential time-varying confounders I have to control in the set of covariates, such as temperature, power usage. Moreover, I need to consider the time-series nature: Autoregressive, as the recent price can be affected by the its historical price. Finally, the density test needs to be checked. 
+Specifically, I take the cost and demand-sector factors related to the coal industry into account.
+In terms of the cost factors. China Coastal Coal Freight Index (CBCFI), which publishes the daily freight rates and comprehensive index of coastal coal cargoes by ship type in the spot market, is collected to reflect on the changes in coal transportation cost. It may affect the coal spot price and should be an important control in our regression analysis, to eliminate the potential causality explained by the increase in the cost factors. For the demand factors, the monthly electricity consumption data is included as well. All of these are processed as weekly frequency data. Refer to Figure 3 \@ref(fig:fig3) for a visualization of the covariates. 
+
+```{r fig3 fig.cap= "Movement of control variables", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
+
+Covariates<- read_excel(here::here("Input/Covariates.xlsx"))
+
+ggplot(data= Covariates)+
+  geom_line(aes(x= Time, y= Covariates$`Electricity consumption`))+
+  geom_line(aes(x= Time, y= CBCFI))
+```
+
+# Experimental Design 
+This study uses Regression Discontinuity in Time (RDiT) framework to examine the impacts of China’s ban on Australian coal event on the thermal coal spot price in China’s market. 
+
+Based on [@Exp2], RDiT framework is one type of regression discontinuity (RD) methodology where time is the running variable and treatment begins at a particular threshold in time. Since the China’s ban on Australian coal event happened at a known time point (12 October, 2020) where discontinuity is at a moment in time [@Exp2]. Moreover, the impacts of this event are projected to be fully effective immediately after the implementation [@Exp7]. As a result, the RDiT framework is suitable for this situation. And the first local linear RDiT framework is presented as follows:
+
+\begin{math}
+$$y_{it}= \beta D_{t}+
+ \varepsilon_{t}$$
+\end{math}
+where $y_{it}$ is a dependent variable and represents the spot coal price. And $D_{t}$ is a binary variable equal to one after the implementation. $\beta$ is the coefficient of our interest, which makes estimations about the average change in coal spot price due to the event.
+
+According to [Exp2], compared with the implementation of traditional cross-sectional RD framework, covariates are much more important in the use of RDiT framework. Thus, I define the second local linear RDiT framework, which is shown as follows:
+
+\begin{math}
+$$y_{it}= \beta D_{t}+X+
+ \varepsilon_{t}$$
+\end{math}
+As talked above, $X$ includes a set of controls to combat several confounding variables. It includes weekly CBCFI records, which will present the cost of coal transportation. At the same time, the covariates also capture weekly amounts of electricity consumption to reflect the major demand of thermal coal in China. 
+
+Lastly, I also narrow the bandwidth of the model defined before, shortening the time window from 25 weeks to 12 weeks after the implementation of the event. As Catherine Hausman and David S. Rapson [@Exp2] have pointed that there might be a time-varying treatment effect in the RDiT framework. The time-varying treatment means the short-run and long-run treatment effect will be different, as the time is a forcing variable. In this case, it is possible that the impacts of the event on thermal coal price will be zero, if China restores the normal import volume.
+
+As a special category of RD methodology, RDiT should also satisfy the assumptions of the regression discontinuity framework. Based on [@Exp8], the fundamental assumptions of RD are as follows:
+1. The cut-off point is clear and precise, and the forcing variable should not be manipulated.
+2. The groups before and after the cut-off point should be the same.
+In this study, the threshold is clear and precise, as we already know the specific date this event began. Moreover, the groups defined in table 1 [tab1], before and after the treatment, are identical. As a result, the model in this study can satisfy the fundamental assumptions of regression discontinuity design. The model in this study is run in R [@citeR]. 
 
 # Results
 
@@ -215,11 +250,4 @@ ggplot(data= Df_factors_2, aes(x= Time, y= Import))+
 
 
 ```
-
-
-
-
-
-
-
 
