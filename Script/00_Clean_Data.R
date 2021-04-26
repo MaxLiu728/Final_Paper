@@ -8,6 +8,8 @@ library(dplyr)
 install.packages("writexl")
 library(writexl)
 library(DiagrammeR)
+## Load data for introduction part ##
+
 
 ## Load Raw data ##
 raw_data<- read_excel(here::here("Input/Raw_Data.xlsx"))
@@ -27,3 +29,7 @@ model_data$Energy<- rep(c(1,0),each=156)
 ### Treat variable ###
 model_data$Treat<- ifelse(model_data$Time>"2020-10-15",1,0)
 write_xlsx(model_data, here::here("Input/model_data.xlsx"))
+
+### Control variable ###
+Co_Variables<- read_excel(here::here("Input/Variables.xlsx"))
+

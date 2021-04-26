@@ -28,7 +28,7 @@ library(scales)
 Intro_data<- read_excel(here::here("Input/Raw_Data.xlsx"))
 ```
 \newpage
-# Introduction
+# Introduction [Introduction]
 ## Overview of the coal market in China
 Coal is remarkably significant and special for China, in which the energy resource structure is “rich coal, less gas, lack of oil”[@Coal3]. In 2019, coal consumption accounted for 57.7% of the country’s total energy usage [@Coal2]. As a result, coal has a dominant position in China’s energy supply and consumption, performing incredible impacts on many aspects of China’s economy, especially for the manufacturing industry. And the position is not likely to present a dramatic change in the coming decades [@Coal3]. 
 
@@ -51,6 +51,7 @@ Intro_data<- Intro_data%>%
 Intro_data<- na.omit(Intro_data)
 Intro_data_2<- gather(Intro_data, key="Index",value="Spot Price", -Time)
 Intro_data_2$Time<- as.Date(Intro_data_2$Time)
+Intro_data$Price<- apply(Intro_data[c(2:5)],1, function(x) mean(x))
 ```
 
 According to several reports, the details of this event can be present as follows: On 13 October 2020, Chinese state-owned power plants and steel mills received verbal notice from authorities to stop buying Australian thermal and coking coal [@Event5]. As shown in Figure \@ref(fig:fig1), 13.73 million tons of coal was imported by China in October 2020, down 46.56 percent from a year ago and down 26.5 percent month-on-month [@Event6]. On 25 November 2020, over 50 vessels anchored off Chinese ports waiting to offload coal from Australia [@Event8]. On 12 January 2021, Chinese traders were importing more coal from neighboring countries such as Russia and Mongolia [@Event4]. 
@@ -86,17 +87,18 @@ Thanks for my career mentor Yang Chen and Beijing Institute of Big Data Research
 
 
 
-# Data
+# Data [Data]
 The primary data for this study involve the four kinds of weekly data of coal spot market price (yuan/ton) in China’s market, setting the calorific value with 5500 kcal/kg, from March 31 2018 to April 3 2021. As talked before in Section 1, four coal price indexes are: CCTD Qinhuangdao thermal coal price index (CCTD), CCI Zonghe coal price index (CCI), Yimei coal price index (Yimei) respectively. As shown in Figure \@ref(fig:fig2), the red line denoted before and after the event.
 
-```{r fig2 fig.cap= "Price index movement of coal", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
-ggplot(Intro_data_2, aes(x= Time, y= Intro_data_2$`Spot Price`, color= Index,group= Index))+
+```{r fig2, fig.cap= "Price index movement of coal", echo = FALSE,warning=FALSE,regfloat=TRUE}
+ggplot(Intro_data_2, aes(x= Time, y= Spot Price, color= Index,group= Index))+
   geom_line()+
   (scale_x_date(labels=date_format("%y-%m"),
                 breaks= date_breaks("3 months")))+
   theme_minimal()+
   geom_vline(xintercept = Intro_data_2$Time[132], linetype= 4,color="red",size=1)+
-  labs(y="Coal Spot Price (In RMB)")
+  labs(y="Coal Spot Price (In RMB)", color="Coal Spot Price Index")+
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 And there are two reasons why I choose these four types of coal price index. Firstly,  the selected prices are the most mainstream coal price index in the current market. They can highly present the volatility in the coal market. Secondly, the four prices are relatively more complete than other options, with less missing values in the chosen time period. I collect these data from the Wind database [Data1]. 
@@ -104,8 +106,7 @@ And there are two reasons why I choose these four types of coal price index. Fir
 In terms of few missing values in one or two coal prices, caused by holidays and festivals, I apply a random forest regression method to make imputations. I also apply the simple average approach to calculate the average coal price of the four selected indexes every week as the input data to my model. Based on Section 1, the study divides the data set into two sub-groups to precisely identify the respective disposal effects. Group 1 corresponds to the Ban on Australian coal event with a time range of March 31, 2018 to October 10, 2020 before the event. Group 2 corresponds to the event with a time range of October 17, 2020 to April 3,  2021 after the implementation. Table 1 \@ref(tab:tab1) provides the descriptive statistics of the data sample. 
 
 ```{r tab1, echo=FALSE}
-Data_data<- filter(Intro_data, Energy==1)%>%
-  select(Time, Price)
+Data_data<- select(Intro_data, Time, Price)
 
 Data_data_1<- as.data.frame(Data_data[1:132,])
 Data_data_2<- as.data.frame(Data_data[132:156,])
@@ -121,8 +122,8 @@ SD_2<- sd(Data_data_2$Price)
 Min_2<- min(Data_data_2$Price)
 Max_2<- max(Data_data_2$Price)
 
-table_1<- rbind.data.frame(c("Group1",obs_1, Mean_1, SD_1, Min_1, Max_1))
-table_1<- rbind.data.frame(table_1, c("Group2",25, Mean_2, SD_2, Min_2, Max_2))
+table_1<- rbind.data.frame(c("Group1",obs_1, round(Mean_1), round(SD_1), Min_1, Max_1))
+table_1<- rbind.data.frame(table_1, c("Group2",25, round(Mean_2), round(SD_2), Min_2, Max_2))
 names(table_1)<- c("Variable","obs","Mean","Std.Dev","Min","Max")
 
 kable(table_1, caption = "Descriptive statistics of coal price at different time periods")
@@ -138,10 +139,11 @@ In terms of the cost factors. China Coastal Coal Freight Index (CBCFI), which pu
 
 
 
-# Experimental Design 
+# Experimental Design [Experiment]
 This study uses Regression Discontinuity in Time (RDiT) framework to examine the impacts of China’s ban on Australian coal event on the thermal coal spot price in China’s market. 
 
-Based on [@Exp2], RDiT framework is one type of regression discontinuity (RD) methodology where time is the running variable and treatment begins at a particular threshold in time. Since the China’s ban on Australian coal event happened at a known time point (12 October, 2020) where discontinuity is at a moment in time [@Exp2]. Moreover, the impacts of this event are projected to be fully effective immediately after the implementation [@Exp7]. As a result, the RDiT framework is suitable for this situation. And the first local linear RDiT framework is presented as follows:
+## Experiment 1
+Based on [@Exp2], RDiT framework is one type of regression discontinuity (RD) methodology where time is the running variable and treatment begins at a particular threshold in time. Since the China’s ban on Australian coal event happened at a known time point (12 October, 2020) where discontinuity is at a moment in time [@Exp2]. Moreover, the impacts of this event are projected to be fully effective immediately after the implementation [@Exp7]. As a result, the RDiT framework is suitable for this situation. And the first local linear RDiT framework is presented as follows \@ref(eq:model1):
 
 \begin{math}
 $$y_{t}= \beta D_{t}+
@@ -149,12 +151,14 @@ $$y_{t}= \beta D_{t}+
 \end{math}
 where $y_{t}$ is a dependent variable and represents the spot coal price. And $D_{t}$ is a binary variable equal to one after the implementation. $\beta$ is the coefficient of our interest, which makes estimations about the average change in coal spot price due to the event.
 
-According to [Exp2], compared with the implementation of traditional cross-sectional RD framework, covariates are much more important in the use of RDiT framework. Thus, I define the second local linear RDiT framework, which is shown as follows:
+## Experiment 2
+According to [@Exp2], compared with the implementation of traditional cross-sectional RD framework, covariates are much more important in the use of RDiT framework. A lot of confounding factors might lead to the bias. Thus, I define the second local linear RDiT framework, which is shown as follows \@ref(eq:model2):
 
 \begin{math}
 $$y_{it}= \beta D_{t}+X+
  \varepsilon_{t}$$ (\#eq:model2)
 \end{math}
+
 As talked above, $X$ includes a set of controls to combat several confounding variables. It includes weekly CBCFI records, which will present the cost of coal transportation. At the same time, the covariates also capture weekly amounts of electricity consumption to reflect the major demand of thermal coal in China. 
 
 Lastly, I also narrow the bandwidth of the model defined before, shortening the time window from 25 weeks to 12 weeks after the implementation of the event. As Catherine Hausman and David S. Rapson [@Exp2] have pointed that there might be a time-varying treatment effect in the RDiT framework. The time-varying treatment means the short-run and long-run treatment effect will be different, as the time is a forcing variable. In this case, it is possible that the impacts of the event on thermal coal price will be zero, if China restores the normal import volume.
@@ -162,108 +166,53 @@ Lastly, I also narrow the bandwidth of the model defined before, shortening the 
 As a special category of RD methodology, RDiT should also satisfy the assumptions of the regression discontinuity framework. Based on [@Exp8], the fundamental assumptions of RD are as follows:
 1. The cut-off point is clear and precise, and the forcing variable should not be manipulated.
 2. The groups before and after the cut-off point should be the same.
-In this study, the threshold is clear and precise, as we already know the specific date this event started. Moreover, the groups defined in table 1 [tab1], before and after the treatment, are identical. As a result, the model in this study can satisfy the fundamental assumptions of regression discontinuity design. The model in this study is run in R [@citeR]. 
+In this study, the threshold is clear and precise, as we already know the specific date this event started. Moreover, the groups defined in table 1 \@ref(tab:tab1), before and after the treatment, are identical. As a result, the model in this study can satisfy the fundamental assumptions of regression discontinuity design. The model in this study is run in R [@citeR]. 
 
-# Results
+# Results [Results]
+## Results of Experiment 1
+The result of the first model is derived as follows:
 \begin{math}
 $$y_{t}= 100.67_{(<0.001)}D_{t} + 537.26_{(0.00000133)}+\varepsilon_{t}$$ (\#eq:formula1)
 \end{math}
 
-```{r fig4 fig.cap= "Visulization of model 1", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
+In the first model \@ref(eq:model1), referring to \@ref(eq:formula1), the China’s ban on Australian coal event positively and significantly affected the thermal coal price in China’s market at the 0.01% confidence level. Basically, in comparison with the average thermal coal price between March 2018 and October 2020 (537.26 yuan/ton), after the implementation of the verbal notice from authorities to stop buying Australian thermal and coking coal, the thermal coal price in China’s market was estimated to increase by 100.67 yuan/ton on average, which was a nearly 18.7% incrementation. As shown in \@ref(fig:fig4), the slope of the fitted line before the treatment was -0.86 ($p$ < 0.001), and the slope of the blue fitted line after the treatment changed to 4.84 ($p$ <0.001). The figure \@ref(fig:fig4) also indicates the coal price was up to nearly 900 yuan/ton in January 2021, 3 months after the occurrence of this event. However, after January 2021, the unusual coal spot price went back to approximately 600 yuan/ton level.
+As a result, the event positively affected thermal coal price, leading to an upward trend in the overall coal spot price, and the impacts became remarkably obvious 3 months after the implementation of the treatment. 
+```{r fig4, fig.cap= "RDiT in Full Sample", echo = FALSE,warning=FALSE,regfloat=TRUE}
 ggplot(data= Exp_data_RDit, aes(x = Time, y = Price, color = Cut_off)) +
   geom_point() + 
   geom_smooth(formula = y~poly(x,1),method = "lm")+
-  labs(y="Price in yuan/ton", colors="Groups")+
-  scale_color_manual(labels = c("Before Treatment", "After Trreatment"), values = c("red", "blue"))
+  labs(y="Price in yuan/ton", color="Groups", title= "Local Linear")+
+  scale_color_manual(labels = c("Before Treatment", "After Trreatment"), values = c("red", "blue"))+
+  (scale_x_date(labels=date_format("%y-%m"),
+                breaks= date_breaks("3 months")))+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
-```{r}
+## Results of Experiment 2
+\begin{math}
+$$y_{t}= 44.73_{(0.00302)}D_{t} + 601.88_{(<0.001)}+X+\varepsilon_{t}$$ (\#eq:formula2)
+\end{math}
 
+In the second model \@ref(eq:model2), after considering the volatility in coal’s transportation cost and synchronous general usage of electricity in China’s society, the event still significantly had positive impacts on thermal coal’s spot price. However, according to \@ref(eq:formula2), I find the coefficient of interest $\Beta$ has decreased from 100.67 in the model 1 [Model1] to 44.73 (0.00302). It indicates, in comparison with the average thermal coal price before the event, the thermal coal price in China’s spot market experienced an increase by 44.73 yuan/ton on average, when holding coal’s transportation cost and society's general electricity consumption constant. The incremental percentage dropped from 18.7% in the experiment one to 7.4% in this experiment. In addition, the coefficient of coal transportation cost control (CBCFI) is significant at the 0.1% confidence level (5.246, $p$ < 0.001), and the factor of electricity consumption significantly affect thermal coal’s price in the selected time window at the 10% confidence level (4.329, 0.09018). In comparison with the results of model 1 \@ref(eq:model1), the event effect is still prominent and thus leads to an upward trend in thermal coal’s price. However, the confounding effects also contribute to the abnormal rise in coal’s price, and the event impacts are estimated to be weakened when including the controls. The detailed results of the model 2 are present in the Appendix. 
+
+## Result of Experiment 3
+In the next experiment, I  narrow the bandwidth of the RDiT framework from January 2020 to January 2021 and eliminate some observations around the threshold to combat potentially time-varying effects and mitigate the short-run selection effects [@Exp2]. Based on the results present in the Appendix, I find the event effect becomes insignificant (58.158, 0.133674) when holding CBCFI and electricity consumption constant. As shown in \@ref(fig:fig5), in comparisons with previous experiment using the full sample, the smaller bandwidth model presents a larger value of coefficient $beta$ and a steeper fitted line after the implementation of the event. 
+
+```{r fig5, fig.cap= "RDiT in narrowed time window", echo = FALSE,warning=FALSE,regfloat=TRUE}
+ggplot(data= Exp_data_RDit_Model3, aes(x = Time, y = Price, color = Cut_off)) +
+  geom_point() + 
+  geom_smooth(formula = y~poly(x,1),method = "lm")+
+  labs(y="Price in yuan/ton", color="Groups", title= "Local Linear")+
+  scale_color_manual(labels = c("Before Treatment", "After Trreatment"), values = c("red", "blue"))+
+  (scale_x_date(labels=date_format("%y-%m"),
+                breaks= date_breaks("3 months")))+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
-# Discussion
+# Discussion [Discussion]
 
 
-# Appendix
-```{r fig3 fig.cap= "Movement of control variables", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
-
-Covariates<- read_excel(here::here("Input/Covariates.xlsx"))
-
-ggplot(data= Covariates)+
-  geom_line(aes(x= Time, y= Covariates$`Electricity consumption`))+
-  geom_line(aes(x= Time, y= CBCFI))
-```
-
-
-
-
-
-```{r}
-library(readxl)
-Df2<- read_excel(here::here("Input/model_data.xlsx"))
-names(Df2)[2]<- 'Price'
-```
-
-```{r}
-Df2$Treat<- as.factor(Df2$Treat)
-Df2$Energy<- as.factor(Df2$Energy)
-model_1= lm(log(Price)~ Energy+ Energy*Treat, data= Df2)
-```
-
-```{r}
-summary(model_1)
-```
-
-```{r echo=FALSE}
-## Parallel trend test## 
-### Visualize ###
-#### Average coal price without the policy effect as the base price##### 
-Base_Group<- group_by(Df2, Energy)%>%
-  filter(Time< "2020-10-17")%>%
-  summarise(Base_price= mean(Price))
-  
-
-Df2<- Percentage(Df2)
-```
-
-```{r}
-## Visualize parallel trend ##
-Df2$Time<- as.Date(Df2$Time)
-ggplot(data = Df2,
-       aes(x= Time, y= Contribution_percentage, col= Energy))+
-  geom_line()+
-  geom_vline(xintercept = Df2$Time[132], linetype= 4,color="red",size=1)+
-  labs(y="Coal Spot Price")+
-  (scale_x_date(labels=date_format("%b %y"),
-                breaks= date_breaks("3 months")))
-```
-
-
-```{r,echo=FALSE}
-## Parallel trend test ##
-
-
-```
-
-
-
-```{r}
-## Import values ##
-Df_factors<- read_xlsx(here::here("Input/Variables.xlsx"))
-names(Df_factors)[1]<- "Time"
-names(Df_factors)[5]<- "Import"
-
-
-library(lubridate) # for working with dates
-library(ggplot2)  # for creating graphs
-library(scales)   # to access breaks/formatting functions
-library(gridExtra) # for arranging plots
-
-Df_factors_2<- Df_factors[63:96, ]
-ggplot(data= Df_factors_2, aes(x= Time, y= Import))+ 
-  geom_bar(stat = "identity", colour= "red")+
-  geom_vline(xintercept = Df_factors_2$Time[32], linetype= 4,color="blue",size=1)
-
-
-```
+# Appendix [Appendix]
 

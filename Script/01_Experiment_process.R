@@ -14,7 +14,7 @@ install.packages(here::here("Packages/rddtools_1.4.0.tar.gz"), repos = NULL, typ
 #install.packages(rddtools)
 library(rddtools)
 #install.packages("rddensity")
-library(rddensity)
+#library(rddensity)
 
 
 Exp_data<- read_excel(here::here("Input/model_data.xlsx"))
@@ -434,10 +434,6 @@ rdd_data(Exp_data_RDit_Model3$Price, Exp_data_RDit_Model3$Period_week, cutpoint 
   rdd_reg_lm(slope = "separate") %>% 
   summary()
 
-ggplot(data= Exp_data_RDit_Model3, aes(x = Time, y = Price, color = Cut_off)) +
-  geom_point() + 
-  geom_smooth(formula = y~poly(x,1),method = "lm")
-
 
 ### Model 3.2 ##
 model_RDiT_Control_2<- lm(Price~ Cut_off*(I-Period_week)+CBCFI+Exp_data_RDit_Model3$`Electricity consumption`, 
@@ -447,16 +443,4 @@ summary(model_RDiT_Control_2)
 
 
 
-## Density test ##
-Exp_data_RDit_2<- as.data.frame(Exp_data_RDit[-c(133),])
-
-model_desnity_test<- rddensity(Exp_data_RDit$Price, c= Exp_data_RDit$Price[132], p=1)
-summary(model_desnity_test)
-
-
-
-
-
-
-
-
+)
