@@ -134,16 +134,9 @@ Specifically, as present in Table 1 \@ref(tab:tab1), in Group 1, there are 132 o
 In addition, I also collect a vector of control variables, to avoid some potentially confounding effects. According to [@Exp2], compared to the traditional RD approach, the RDiT framework is more necessary to add some control variables. As some unobserved variables related with the running variable time, such as weather or cost, might have discontinuous impacts on the coal price. As a result, covariates will be included in this study to prevent bias. 
 
 Specifically, I take the cost and demand-sector factors related to the coal industry into account.
-In terms of the cost factors. China Coastal Coal Freight Index (CBCFI), which publishes the daily freight rates and comprehensive index of coastal coal cargoes by ship type in the spot market, is collected to reflect on the changes in coal transportation cost. It may affect the coal spot price and should be an important control in our regression analysis, to eliminate the potential causality explained by the increase in the cost factors. For the demand factors, the monthly electricity consumption data is included as well. All of these are processed as weekly frequency data. Refer to Figure 3 \@ref(fig:fig3) for a visualization of the covariates. 
+In terms of the cost factors. China Coastal Coal Freight Index (CBCFI), which publishes the daily freight rates and comprehensive index of coastal coal cargoes by ship type in the spot market, is collected to reflect on the changes in coal transportation cost. It may affect the coal spot price and should be an important control in our regression analysis, to eliminate the potential causality explained by the increase in the cost factors. For the demand factors, the monthly electricity consumption data is included as well. All of these are processed as weekly frequency data. Refer to Figure 3 \@ref(fig:fig3) in Appendix for a visualization of the covariates. 
 
-```{r fig3 fig.cap= "Movement of control variables", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
 
-Covariates<- read_excel(here::here("Input/Covariates.xlsx"))
-
-ggplot(data= Covariates)+
-  geom_line(aes(x= Time, y= Covariates$`Electricity consumption`))+
-  geom_line(aes(x= Time, y= CBCFI))
-```
 
 # Experimental Design 
 This study uses Regression Discontinuity in Time (RDiT) framework to examine the impacts of China’s ban on Australian coal event on the thermal coal spot price in China’s market. 
@@ -151,16 +144,16 @@ This study uses Regression Discontinuity in Time (RDiT) framework to examine the
 Based on [@Exp2], RDiT framework is one type of regression discontinuity (RD) methodology where time is the running variable and treatment begins at a particular threshold in time. Since the China’s ban on Australian coal event happened at a known time point (12 October, 2020) where discontinuity is at a moment in time [@Exp2]. Moreover, the impacts of this event are projected to be fully effective immediately after the implementation [@Exp7]. As a result, the RDiT framework is suitable for this situation. And the first local linear RDiT framework is presented as follows:
 
 \begin{math}
-$$y_{it}= \beta D_{t}+
- \varepsilon_{t}$$
+$$y_{t}= \beta D_{t}+
+ \varepsilon_{t}$$ (\#eq:model1)
 \end{math}
-where $y_{it}$ is a dependent variable and represents the spot coal price. And $D_{t}$ is a binary variable equal to one after the implementation. $\beta$ is the coefficient of our interest, which makes estimations about the average change in coal spot price due to the event.
+where $y_{t}$ is a dependent variable and represents the spot coal price. And $D_{t}$ is a binary variable equal to one after the implementation. $\beta$ is the coefficient of our interest, which makes estimations about the average change in coal spot price due to the event.
 
 According to [Exp2], compared with the implementation of traditional cross-sectional RD framework, covariates are much more important in the use of RDiT framework. Thus, I define the second local linear RDiT framework, which is shown as follows:
 
 \begin{math}
 $$y_{it}= \beta D_{t}+X+
- \varepsilon_{t}$$
+ \varepsilon_{t}$$ (\#eq:model2)
 \end{math}
 As talked above, $X$ includes a set of controls to combat several confounding variables. It includes weekly CBCFI records, which will present the cost of coal transportation. At the same time, the covariates also capture weekly amounts of electricity consumption to reflect the major demand of thermal coal in China. 
 
@@ -169,14 +162,37 @@ Lastly, I also narrow the bandwidth of the model defined before, shortening the 
 As a special category of RD methodology, RDiT should also satisfy the assumptions of the regression discontinuity framework. Based on [@Exp8], the fundamental assumptions of RD are as follows:
 1. The cut-off point is clear and precise, and the forcing variable should not be manipulated.
 2. The groups before and after the cut-off point should be the same.
-In this study, the threshold is clear and precise, as we already know the specific date this event began. Moreover, the groups defined in table 1 [tab1], before and after the treatment, are identical. As a result, the model in this study can satisfy the fundamental assumptions of regression discontinuity design. The model in this study is run in R [@citeR]. 
+In this study, the threshold is clear and precise, as we already know the specific date this event started. Moreover, the groups defined in table 1 [tab1], before and after the treatment, are identical. As a result, the model in this study can satisfy the fundamental assumptions of regression discontinuity design. The model in this study is run in R [@citeR]. 
 
 # Results
+\begin{math}
+$$y_{t}= 100.67_{(<0.001)}D_{t} + 537.26_{(0.00000133)}+\varepsilon_{t}$$ (\#eq:formula1)
+\end{math}
+
+```{r fig4 fig.cap= "Visulization of model 1", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
+ggplot(data= Exp_data_RDit, aes(x = Time, y = Price, color = Cut_off)) +
+  geom_point() + 
+  geom_smooth(formula = y~poly(x,1),method = "lm")+
+  labs(y="Price in yuan/ton", colors="Groups")+
+  scale_color_manual(labels = c("Before Treatment", "After Trreatment"), values = c("red", "blue"))
+```
+
+```{r}
+
+```
 
 # Discussion
 
 
+# Appendix
+```{r fig3 fig.cap= "Movement of control variables", echo = FALSE, fig.width=25 warning=FALSE,regfloat=TRUE}
 
+Covariates<- read_excel(here::here("Input/Covariates.xlsx"))
+
+ggplot(data= Covariates)+
+  geom_line(aes(x= Time, y= Covariates$`Electricity consumption`))+
+  geom_line(aes(x= Time, y= CBCFI))
+```
 
 
 

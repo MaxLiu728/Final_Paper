@@ -11,6 +11,11 @@ library(scales)
 library(DiagrammeR)
 library(devtools)
 install.packages(here::here("Packages/rddtools_1.4.0.tar.gz"), repos = NULL, type = "source")
+#install.packages(rddtools)
+library(rddtools)
+#install.packages("rddensity")
+library(rddensity)
+
 
 Exp_data<- read_excel(here::here("Input/model_data.xlsx"))
 names(Exp_data)[2]<- 'Price'
@@ -400,31 +405,52 @@ Exp_data_RDit$Period_week<- c(1:156)
 Exp_data_RDit$Cut_off= as.factor(Exp_data_RDit$Cut_off)
 ggplot(data= Exp_data_RDit, aes(x = Time, y = Price, color = Cut_off)) +
   geom_point() + 
-  geom_smooth(formula = y~poly(x,3),method = "lm")
+  geom_smooth(formula = y~poly(x,1),method = "lm")
 
 ## RDD Tool ##
-install.packages(rddtools)
-library(rddtools)
 Exp_data_RDit$Period_week<- as.numeric(Exp_data_RDit$Period_week)
 
-## Model ##
+## Model 1##
 rdd_data(Exp_data_RDit$Price, Exp_data_RDit$Period_week, cutpoint = 132) %>% 
   rdd_reg_lm(slope = "separate") %>% 
   summary()
 
-model_RDit<- lm(Price~ Cut_off+I(Period_week-132), data = Exp_data_RDit)
-summary(model_RDit)
+## Model 2 Control variables ##
+Controls<- read_excel(here::here("Input/Covariates.xlsx"))
+### Standarization ## 
+Controls_scaled<- Controls
+Controls_scaled$`Electricity consumption`<- scale(Controls_scaled$`Electricity consumption`)[,1]
+Controls_scaled$CBCFI<- scale(Controls_scaled$CBCFI)[,1]
+Exp_data_RDit_control<- cbind.data.frame(Exp_data_RDit, Controls_scaled[c(2,3)])
+#?rdd_data
+model_RDiT_Control<- lm(Price~ Cut_off+CBCFI+Exp_data_RDit_control$`Electricity consumption`, 
+                        data = Exp_data_RDit_control)
+summary(model_RDiT_Control)
 
-model_RDit_2<- lm(Price~ Cut_off+ Cut_off* I(Period_week-132), data= Exp_data_RDit)
-summary(model_RDit_2)
+## Model 3 Narrow window ## 
+Exp_data_RDit_Model3<- Exp_data_RDit_control[c(93:130, 136:148),]
+### Model 3.1 ##
+rdd_data(Exp_data_RDit_Model3$Price, Exp_data_RDit_Model3$Period_week, cutpoint = 130) %>% 
+  rdd_reg_lm(slope = "separate") %>% 
+  summary()
 
-## Control variables ##
+ggplot(data= Exp_data_RDit_Model3, aes(x = Time, y = Price, color = Cut_off)) +
+  geom_point() + 
+  geom_smooth(formula = y~poly(x,1),method = "lm")
+
+
+### Model 3.2 ##
+model_RDiT_Control_2<- lm(Price~ Cut_off*(I-Period_week)+CBCFI+Exp_data_RDit_Model3$`Electricity consumption`, 
+                        data = Exp_data_RDit_Model3)
+summary(model_RDiT_Control_2)
+
+
 
 
 ## Density test ##
-install.packages("rddensity")
-library(rddensity)
-model_desnity_test<- rddensity(Exp_data_RDit$Price, c= Exp_data_RDit$Price[132], p=2)
+Exp_data_RDit_2<- as.data.frame(Exp_data_RDit[-c(133),])
+
+model_desnity_test<- rddensity(Exp_data_RDit$Price, c= Exp_data_RDit$Price[132], p=1)
 summary(model_desnity_test)
 
 
