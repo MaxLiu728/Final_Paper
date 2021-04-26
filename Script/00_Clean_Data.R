@@ -17,6 +17,7 @@ raw_data<- na.omit(raw_data[c(1,5,6,7,8,9)])
 
 ## Add dummy variable ##
 ### Price variable ###
+
 raw_data$coal_price<- apply(raw_data[c(2,3,4,5)], 1, function(x) x=mean(x))
 model_data<- raw_data[c(1,6,7)]
 model_data<- rbind.data.frame(model_data, model_data)
@@ -32,4 +33,3 @@ write_xlsx(model_data, here::here("Input/model_data.xlsx"))
 
 ### Control variable ###
 Co_Variables<- read_excel(here::here("Input/Variables.xlsx"))
-

@@ -1,8 +1,8 @@
 ---
-title: "Impact of China's ban on Australian coal policy on China's thermal coal prices"
+title: "Impact of China's ban on Australian coal event on China's thermal coal prices"
 author: "Renjing Liu"
-date: "`r format(Sys.time(), '%d %B %Y')`"
-abstract: "With the dominant and special position of Coal in China, the fluctuations in thermal coal’s price will affect many aspects in the society of the country. Many government’s behaviors will directly and indirectly affect the price, and it is necessary for them to identify the magnitude of impacts and then present some adjustments. In this study, I am going to quantify the impacts of China’s ban on Australian coal on the thermal coal price in China’s coal market. The crude oil is going to be set as my control group in my difference-in-difference framework.  "
+date: "`r Sys.Date()`"
+abstract: "With the dominant and special position of Coal in China, the fluctuations in thermal coal’s price will affect many aspects in the society of the country. Many government’s behaviors will directly and indirectly affect the price, and it is necessary for them to identify the magnitude of impacts and then present some adjustments. In this study, I am going to quantify the impacts of China’s ban on Australian coal on the thermal coal price in China’s coal market. The Regression Discontinuity in Time framework will be used, setting the time as the forcing variable. Empirical results are summarized as follows: when including the control variables of coal transportation cost and society’s electricity consumption, the event led to an increase in thermal coal’s price by 44.73 yuan/ton on average, compared with the average thermal coal price before the event. Moreover, the lasting period of impacts is short till January 2021. The main reason for the results is that the event affected the supplies of coal domestically and the demand of thermal coal in China was also very high in the same time period. The core contribution of this study is to help the central government a methodology to measure the impacts of their policies and remind them to establish some prepared macro-controls to sustain the stability of China’s economy. "
 output: 
   bookdown::pdf_document2:
     latex_engine: xelatex
@@ -28,7 +28,7 @@ library(scales)
 Intro_data<- read_excel(here::here("Input/Raw_Data.xlsx"))
 ```
 \newpage
-# Introduction [Introduction]
+# Introduction 
 ## Overview of the coal market in China
 Coal is remarkably significant and special for China, in which the energy resource structure is “rich coal, less gas, lack of oil”[@Coal3]. In 2019, coal consumption accounted for 57.7% of the country’s total energy usage [@Coal2]. As a result, coal has a dominant position in China’s energy supply and consumption, performing incredible impacts on many aspects of China’s economy, especially for the manufacturing industry. And the position is not likely to present a dramatic change in the coming decades [@Coal3]. 
 
@@ -57,23 +57,24 @@ Intro_data$Price<- apply(Intro_data[c(2:5)],1, function(x) mean(x))
 According to several reports, the details of this event can be present as follows: On 13 October 2020, Chinese state-owned power plants and steel mills received verbal notice from authorities to stop buying Australian thermal and coking coal [@Event5]. As shown in Figure \@ref(fig:fig1), 13.73 million tons of coal was imported by China in October 2020, down 46.56 percent from a year ago and down 26.5 percent month-on-month [@Event6]. On 25 November 2020, over 50 vessels anchored off Chinese ports waiting to offload coal from Australia [@Event8]. On 12 January 2021, Chinese traders were importing more coal from neighboring countries such as Russia and Mongolia [@Event4]. 
 
 ```{r fig1, fig.cap= "Monthly movement of coal import values", echo = FALSE, warning=FALSE,regfloat=TRUE}
-Variable_data<- read_excel(here::here("Input/Variables.xlsx"))
+Variable_data<- read_excel(here::here("Input/Variables_2.xlsx"))
 Import_info<- Variable_data[c(1,5)]
 names(Import_info)[1]<- "Time"
 names(Import_info)[2]<- "Import_Value"
-Import_info$Time <- format(as.Date(Import_info$Time), "%y-%m")
+#Import_info$Time<- as.Date(Import_info$Time)
+#Import_info$Time <- format(as.Date(Import_info$Time), "%y-%m")
 Import_info<- as.data.frame(Import_info[81:96, ])
 Import_info<- as.data.frame(Import_info[-c(4,5,6), ])
 ggplot(data= Import_info)+
   geom_col(aes(x= Time, y= Import_Value), size= 1, color= "darkblue", fill="white")+
   geom_line(aes(x= Time, y= Import_Value), size= 1.5, color= "red", group=1)+
   theme(axis.text.x = element_text(angle = 90))+
-  labs(y= "Imports of coal (In million tons")
+  labs(y= "Imports of coal (In million tons)")
 ```
 
 
 ## Coal price disturbances
-According to [Coal7], in 2017, China’s National Development & Reform Commission said few top coal industry enterprises had agreed on the contract with coal price at 535 yuan ($79) per tonne, which was close to the profit and loss point of coal and electricity enterprises, instead of referring to fluctuating spot market price. The government wanted to promote similar regulations to stabilize coal transaction prices, to ensure both supply-side and demand-side can have a similar profit margin. Based on [Coal2], without a stabilized coal market price, other industries and socio-economic development might be destroyed. Specifically, the changes in coal price could perform negative impacts on overall price levels [@Coal4]. And the abnormality in China’s coal price may indicate the fluctuations in dynamics of the global fossil fuel market [@Coal8]. Moreover, as coal is mainly used for power generation, the disturbances in coal price may also have adverse effects on power sectors in China. As a result, any related policies made by the central government should necessarily concern the potential impacts on the coal price, avoiding the unusual volatility in coal market price. 
+According to [@Coal7], in 2017, China’s National Development & Reform Commission said few top coal industry enterprises had agreed on the contract with coal price at 535 yuan ($79) per tonne, which was close to the profit and loss point of coal and electricity enterprises, instead of referring to fluctuating spot market price. The government wanted to promote similar regulations to stabilize coal transaction prices, to ensure both supply-side and demand-side can have a similar profit margin. Based on [@Coal2], without a stabilized coal market price, other industries and socio-economic development might be destroyed. Specifically, the changes in coal price could perform negative impacts on overall price levels [@Coal4]. And the abnormality in China’s coal price may indicate the fluctuations in dynamics of the global fossil fuel market [@Coal8]. Moreover, as coal is mainly used for power generation, the disturbances in coal price may also have adverse effects on power sectors in China. As a result, any related policies made by the central government should necessarily concern the potential impacts on the coal price, avoiding the unusual volatility in coal market price. 
 
 On the basis of all the points above, I personally want to identify whether China’s ban on the Australian coal event indicates the fluctuations of thermal coal price and hence the magnitude of the impacts during winter 2020. The result may help the government to reflect on some unobserved or observed impacts of this incident, facilitating them to make policy decisions more reasonably in the future.
 
@@ -85,13 +86,14 @@ The remainder of this paper is organized as follows. Section 2 presents the data
 
 Thanks for my career mentor Yang Chen and Beijing Institute of Big Data Research (BIBDR), who provided me the access to some data and other coal industry guidance. 
 
-
-
-# Data [Data]
+\newpage
+# Data 
 The primary data for this study involve the four kinds of weekly data of coal spot market price (yuan/ton) in China’s market, setting the calorific value with 5500 kcal/kg, from March 31 2018 to April 3 2021. As talked before in Section 1, four coal price indexes are: CCTD Qinhuangdao thermal coal price index (CCTD), CCI Zonghe coal price index (CCI), Yimei coal price index (Yimei) respectively. As shown in Figure \@ref(fig:fig2), the red line denoted before and after the event.
 
 ```{r fig2, fig.cap= "Price index movement of coal", echo = FALSE,warning=FALSE,regfloat=TRUE}
-ggplot(Intro_data_2, aes(x= Time, y= Spot Price, color= Index,group= Index))+
+names(Intro_data_2)[2]<- "Index"
+names(Intro_data_2)[3]<- "Spot_Price"
+ggplot(Intro_data_2, aes(x= Time, y= Spot_Price, color= Index,group= Index))+
   geom_line()+
   (scale_x_date(labels=date_format("%y-%m"),
                 breaks= date_breaks("3 months")))+
@@ -101,7 +103,7 @@ ggplot(Intro_data_2, aes(x= Time, y= Spot Price, color= Index,group= Index))+
   theme(axis.text.x = element_text(angle = 90))
 ```
 
-And there are two reasons why I choose these four types of coal price index. Firstly,  the selected prices are the most mainstream coal price index in the current market. They can highly present the volatility in the coal market. Secondly, the four prices are relatively more complete than other options, with less missing values in the chosen time period. I collect these data from the Wind database [Data1]. 
+And there are two reasons why I choose these four types of coal price index. Firstly,  the selected prices are the most mainstream coal price index in the current market. They can highly present the volatility in the coal market. Secondly, the four prices are relatively more complete than other options, with less missing values in the chosen time period. I collect these data from the Wind database [@Data1]. 
 
 In terms of few missing values in one or two coal prices, caused by holidays and festivals, I apply a random forest regression method to make imputations. I also apply the simple average approach to calculate the average coal price of the four selected indexes every week as the input data to my model. Based on Section 1, the study divides the data set into two sub-groups to precisely identify the respective disposal effects. Group 1 corresponds to the Ban on Australian coal event with a time range of March 31, 2018 to October 10, 2020 before the event. Group 2 corresponds to the event with a time range of October 17, 2020 to April 3,  2021 after the implementation. Table 1 \@ref(tab:tab1) provides the descriptive statistics of the data sample. 
 
@@ -135,11 +137,11 @@ Specifically, as present in Table 1 \@ref(tab:tab1), in Group 1, there are 132 o
 In addition, I also collect a vector of control variables, to avoid some potentially confounding effects. According to [@Exp2], compared to the traditional RD approach, the RDiT framework is more necessary to add some control variables. As some unobserved variables related with the running variable time, such as weather or cost, might have discontinuous impacts on the coal price. As a result, covariates will be included in this study to prevent bias. 
 
 Specifically, I take the cost and demand-sector factors related to the coal industry into account.
-In terms of the cost factors. China Coastal Coal Freight Index (CBCFI), which publishes the daily freight rates and comprehensive index of coastal coal cargoes by ship type in the spot market, is collected to reflect on the changes in coal transportation cost. It may affect the coal spot price and should be an important control in our regression analysis, to eliminate the potential causality explained by the increase in the cost factors. For the demand factors, the monthly electricity consumption data is included as well. All of these are processed as weekly frequency data. Refer to Figure 3 \@ref(fig:fig3) in Appendix for a visualization of the covariates. 
+In terms of the cost factors. China Coastal Coal Freight Index (CBCFI), which publishes the daily freight rates and comprehensive index of coastal coal cargoes by ship type in the spot market, is collected to reflect on the changes in coal transportation cost. It may affect the coal spot price and should be an important control in our regression analysis, to eliminate the potential causality explained by the increase in the cost factors. For the demand factors, the monthly electricity consumption data is included as well. All of these are processed as weekly frequency data. Refer to Figure in Appendix for a visualization of the covariates. 
 
 
-
-# Experimental Design [Experiment]
+\newpage
+# Experimental Design 
 This study uses Regression Discontinuity in Time (RDiT) framework to examine the impacts of China’s ban on Australian coal event on the thermal coal spot price in China’s market. 
 
 ## Experiment 1
@@ -149,6 +151,7 @@ Based on [@Exp2], RDiT framework is one type of regression discontinuity (RD) me
 $$y_{t}= \beta D_{t}+
  \varepsilon_{t}$$ (\#eq:model1)
 \end{math}
+
 where $y_{t}$ is a dependent variable and represents the spot coal price. And $D_{t}$ is a binary variable equal to one after the implementation. $\beta$ is the coefficient of our interest, which makes estimations about the average change in coal spot price due to the event.
 
 ## Experiment 2
@@ -161,23 +164,30 @@ $$y_{it}= \beta D_{t}+X+
 
 As talked above, $X$ includes a set of controls to combat several confounding variables. It includes weekly CBCFI records, which will present the cost of coal transportation. At the same time, the covariates also capture weekly amounts of electricity consumption to reflect the major demand of thermal coal in China. 
 
+## Experiment 3
 Lastly, I also narrow the bandwidth of the model defined before, shortening the time window from 25 weeks to 12 weeks after the implementation of the event. As Catherine Hausman and David S. Rapson [@Exp2] have pointed that there might be a time-varying treatment effect in the RDiT framework. The time-varying treatment means the short-run and long-run treatment effect will be different, as the time is a forcing variable. In this case, it is possible that the impacts of the event on thermal coal price will be zero, if China restores the normal import volume.
 
 As a special category of RD methodology, RDiT should also satisfy the assumptions of the regression discontinuity framework. Based on [@Exp8], the fundamental assumptions of RD are as follows:
 1. The cut-off point is clear and precise, and the forcing variable should not be manipulated.
 2. The groups before and after the cut-off point should be the same.
-In this study, the threshold is clear and precise, as we already know the specific date this event started. Moreover, the groups defined in table 1 \@ref(tab:tab1), before and after the treatment, are identical. As a result, the model in this study can satisfy the fundamental assumptions of regression discontinuity design. The model in this study is run in R [@citeR]. 
+In this study, the threshold is clear and precise, as we already know the specific date this event started. Moreover, the groups defined in table \@ref(tab:tab1), before and after the treatment, are identical. As a result, the model in this study can satisfy the fundamental assumptions of regression discontinuity design. The model in this study is run in R [@citeR]. 
 
-# Results [Results]
+\newpage
+# Results 
+
 ## Results of Experiment 1
 The result of the first model is derived as follows:
+
 \begin{math}
 $$y_{t}= 100.67_{(<0.001)}D_{t} + 537.26_{(0.00000133)}+\varepsilon_{t}$$ (\#eq:formula1)
 \end{math}
 
 In the first model \@ref(eq:model1), referring to \@ref(eq:formula1), the China’s ban on Australian coal event positively and significantly affected the thermal coal price in China’s market at the 0.01% confidence level. Basically, in comparison with the average thermal coal price between March 2018 and October 2020 (537.26 yuan/ton), after the implementation of the verbal notice from authorities to stop buying Australian thermal and coking coal, the thermal coal price in China’s market was estimated to increase by 100.67 yuan/ton on average, which was a nearly 18.7% incrementation. As shown in \@ref(fig:fig4), the slope of the fitted line before the treatment was -0.86 ($p$ < 0.001), and the slope of the blue fitted line after the treatment changed to 4.84 ($p$ <0.001). The figure \@ref(fig:fig4) also indicates the coal price was up to nearly 900 yuan/ton in January 2021, 3 months after the occurrence of this event. However, after January 2021, the unusual coal spot price went back to approximately 600 yuan/ton level.
 As a result, the event positively affected thermal coal price, leading to an upward trend in the overall coal spot price, and the impacts became remarkably obvious 3 months after the implementation of the treatment. 
+
 ```{r fig4, fig.cap= "RDiT in Full Sample", echo = FALSE,warning=FALSE,regfloat=TRUE}
+Exp_data_RDit<- read_excel(here::here("Input/Exp_data_RDit.xlsx"))
+Exp_data_RDit$Time<- as.Date(Exp_data_RDit$Time)
 ggplot(data= Exp_data_RDit, aes(x = Time, y = Price, color = Cut_off)) +
   geom_point() + 
   geom_smooth(formula = y~poly(x,1),method = "lm")+
@@ -196,10 +206,12 @@ $$y_{t}= 44.73_{(0.00302)}D_{t} + 601.88_{(<0.001)}+X+\varepsilon_{t}$$ (\#eq:fo
 
 In the second model \@ref(eq:model2), after considering the volatility in coal’s transportation cost and synchronous general usage of electricity in China’s society, the event still significantly had positive impacts on thermal coal’s spot price. However, according to \@ref(eq:formula2), I find the coefficient of interest $\Beta$ has decreased from 100.67 in the model 1 [Model1] to 44.73 (0.00302). It indicates, in comparison with the average thermal coal price before the event, the thermal coal price in China’s spot market experienced an increase by 44.73 yuan/ton on average, when holding coal’s transportation cost and society's general electricity consumption constant. The incremental percentage dropped from 18.7% in the experiment one to 7.4% in this experiment. In addition, the coefficient of coal transportation cost control (CBCFI) is significant at the 0.1% confidence level (5.246, $p$ < 0.001), and the factor of electricity consumption significantly affect thermal coal’s price in the selected time window at the 10% confidence level (4.329, 0.09018). In comparison with the results of model 1 \@ref(eq:model1), the event effect is still prominent and thus leads to an upward trend in thermal coal’s price. However, the confounding effects also contribute to the abnormal rise in coal’s price, and the event impacts are estimated to be weakened when including the controls. The detailed results of the model 2 are present in the Appendix. 
 
-## Result of Experiment 3
+## Results of Experiment 3
 In the next experiment, I  narrow the bandwidth of the RDiT framework from January 2020 to January 2021 and eliminate some observations around the threshold to combat potentially time-varying effects and mitigate the short-run selection effects [@Exp2]. Based on the results present in the Appendix, I find the event effect becomes insignificant (58.158, 0.133674) when holding CBCFI and electricity consumption constant. As shown in \@ref(fig:fig5), in comparisons with previous experiment using the full sample, the smaller bandwidth model presents a larger value of coefficient $beta$ and a steeper fitted line after the implementation of the event. 
 
 ```{r fig5, fig.cap= "RDiT in narrowed time window", echo = FALSE,warning=FALSE,regfloat=TRUE}
+Exp_data_RDit_Model3<- read_excel(here::here("Input/Exp_data_RDit_Model3.xlsx"))
+Exp_data_RDit_Model3$Time<- as.Date(Exp_data_RDit_Model3$Time)
 ggplot(data= Exp_data_RDit_Model3, aes(x = Time, y = Price, color = Cut_off)) +
   geom_point() + 
   geom_smooth(formula = y~poly(x,1),method = "lm")+
@@ -211,8 +223,57 @@ ggplot(data= Exp_data_RDit_Model3, aes(x = Time, y = Price, color = Cut_off)) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
-# Discussion [Discussion]
+\newpage
+# Discussion 
+
+An empirical study using Regression Discontinuity in Time framework is conducted here. The study aims to examine whether China’s ban on Australian coal event performed some effects on China’s thermal coal spot price. From the empirical results generated in the previous section, I find the event significantly had positive impacts on leading an upward trend in thermal coal’s price in China’s market when I do not limit the bandwidth of the model, and the results do not vary across whether considering the control variables or not. However, I notice there are serious confounding effects from both demand-side and cost-side, causing varying degrees of price fluctuations. The findings also indicate the lasting period of the impacts is very short, as there was an downward trend in thermal coal price after January 2021. Some reasons about these findings are presented as follows:
+
+Generally, the occurrence of the event directly affected the volume of coal importing for China, and hence limiting the coal supplies domestically within a short period. As the world’s top coal importer and consumer of thermal coal, nearly 40% of imported coal comes from Australia. The abrupt ban on Australian coal created an imbalance between supply and demand in China’s energy consumption in the end of 2020. However, based on some of my research on China’s websites, I did not notice that the central authorities in my country took any prepared macro-measures to cope with this event or estimated the potential impacts on coal’s price.
+In fact, although the central government estimated there should be no possibilities in leading to an unbalanced energy supply domestically after the implementation of the policy, my experimental findings indicate my country still pays some price for this policy, leading to a boost in China’s thermal coal spot price. However, the lasting period was very short, as China quickly procured more coal from other countries such as Indonesia and Mongolia, and hence sustaining a balance between coal supply and demand. 
+
+Moreover, the fluctuations caused by the coal ban should not have been so drastic and abnormal. Based on figure \@ref(fig:fig6) and figure \@ref(fig:fig7), the CBCFI and China’s general electricity consumption also experienced a remarkable increase during the same period. My experimental findings also indicate the coal transportation cost and society’s electricity consumption significantly have positive impacts on thermal coal’s spot price. As a result, parts of incrementations in thermal coal’s price in China’s market after the treatment event could be explained by a more expensive coal transportation cost and the higher power demand.  In the end of 2020, China gradually controlled the COVID-19, and there was a lot of demand to restore work in the manufacturing sector. Thus, it led to a higher requirement for coal to generate electricity, and it can explain why the CBCFI and China’s general electricity consumption present a remarkable increase. 
+
+On the basis of the findings from two control variables in this empirical study, I also conclude some weakness in my experimental design. Firstly, there might be more unobserved confounding factors when I set the time as forcing variable in the regression discontinuity design. Beside the coal cost factor and demand factor, weather or business status of coal related enterprises may also confound the impacts after the implementation of the treatment event, bringing more unobservable changes. Secondly, compared with standard cross-sectional RD design, RDiT framework can only increase sample size by widening the bandwidth, and it may bring more confounding factors. Meanwhile, in this study, sample size after the treatment event is not balanced with that before the treatment event, and the insufficient sample size may also lead to more bias. Lastly, the local linear approach might need some improvements, The application of the global polynomial regression model might be more reasonable. Because the R squared value in three experimental results indicates less than 80% change in the data set can be explained by the local linear approach. Therefore, the use of global polynomial regression methodology might bring more improvements in the future. 
+
+As I have talked in the introduction section. Coal represents a special position in China’s economic development, dominating the supplies of China’s energy and significantly affecting many aspects in China’s society. As the biggest country in infrastructure construction and manufacturing industry, coal provides a continuous source of power for these activities in China. The disturbances in thermal coal price in China’s market will definitely perform adverse impacts on China’s future economic development. As a result, any events or policies of the coal industry implemented by my country’s authorities ought to seriously consider the potential results, estimating the magnitude of the event impacts and thinking about some marco-measures to sustain the stability in the domestic economy before the implementation. The major work and enlightenment of this study is to quantify the effects of China’s ban on Australian coal event on China’s thermal coal spot price. The similar experimental methodology and design can be applied by the government to measure the impacts of other policies. In the future, the model should include more control variables under the mixed data model to precisely estimate the impacts of government policies on coal prices. 
 
 
-# Appendix [Appendix]
+# Appendix 
+
+## Control variables
+
+```{r fig6, fig.cap= "Movement in coal transportation cost", echo = FALSE,warning=FALSE,regfloat=TRUE}
+Appendix_data<- read_excel(here::here("Input/Variables.xlsx"))
+Appendix_data<- as.data.frame(Appendix_data[61:100, ])
+Appendix_data$Time<- as.Date(Appendix_data$Time)
+ggplot(Appendix_data, aes(x= Time, y= CBCFI))+
+  geom_line()+
+  (scale_x_date(labels=date_format("%y-%m"),
+                breaks= date_breaks("3 months")))+
+  theme_minimal()+
+  geom_vline(xintercept = Appendix_data$Time[34], linetype= 4,color="red",size=1)+
+  labs(y="CBCFI (Base 100)")+
+  theme(axis.text.x = element_text(angle = 90))+
+  geom_point()
+```
+
+
+
+```{r fig7, fig.cap= "Movement in society's electricity consumption", echo = FALSE,warning=FALSE,regfloat=TRUE}
+ggplot(data= Appendix_data)+
+  geom_col(aes(x= Time, y= Electricity_Consumption), size= 1, color= "darkblue", fill="white")+
+  geom_line(aes(x= Time, y= Electricity_Consumption), size= 1.5, color= "red", group=1)+
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(y= "Electricity consumption")+
+  geom_vline(xintercept = Appendix_data$Time[34], linetype= 4,color="darkorange",size=1)
+```
+
+
+\newpage
+## Experimental results
+
+
+
+\newpage
+# Reference
 

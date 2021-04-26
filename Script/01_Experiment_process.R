@@ -440,7 +440,5 @@ model_RDiT_Control_2<- lm(Price~ Cut_off*(I-Period_week)+CBCFI+Exp_data_RDit_Mod
                         data = Exp_data_RDit_Model3)
 summary(model_RDiT_Control_2)
 
-
-
-
-)
+write_xlsx(Exp_data_RDit_Model3, here::here("Input/Exp_data_RDit_Model3.xlsx"))
+write_xlsx(Exp_data_RDit, here::here("Input/Exp_data_RDit.xlsx"))

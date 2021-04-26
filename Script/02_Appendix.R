@@ -26,12 +26,3 @@ ggplot(data= Covariates)+
 
 
 
-## Visualize parallel trend ##
-Df2$Time<- as.Date(Df2$Time)
-ggplot(data = Df2,
-       aes(x= Time, y= Contribution_percentage, col= Energy))+
-  geom_line()+
-  geom_vline(xintercept = Df2$Time[132], linetype= 4,color="red",size=1)+
-  labs(y="Coal Spot Price", title= "Local Linear")+
-  (scale_x_date(labels=date_format("%b %y"),
-                breaks= date_breaks("3 months")))
