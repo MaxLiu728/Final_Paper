@@ -25,7 +25,7 @@
 1. Install required packages
 2. Execute script 00_Clean_Data (Found in the scripts folder)
 3. Execute script 01_Experiment_process (Found in the scripts folder)
-4. RUn the R markdown file in the Output folder
+4. Run the R markdown file in the Output folder
 
 ## License:
 This project is licensed under the MIT License.
